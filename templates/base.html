@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab kendo</title>
+    <!-- kendo CSS -->
+    <link href="{% static 'kendo/styles/kendo.common.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'kendo/styles/kendo.bootstrap-v4.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'kendo/styles/kendo.default.mobile.min.css' %}" rel="stylesheet"/>
+    <style>
+        html {
+            overflow-y: scroll;
+            font: 90% Arial, Helvetica, sans-serif;
+            background: #f5f7f8;
+        }
+    </style>
+</head>
+<body>
+    {% block content %}
+    
+    {% endblock %}
+</body>
+</html>

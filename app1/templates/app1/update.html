@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="example">
+        <form id="myForm" data-role="form" class="k-widget k-form" novalidate="novalidate" method="post">
+            {% csrf_token %}
+            <div class="k-form-field">
+                <label class="k-label k-form-label" for="provcod" id="provcod-form-label">รหัสจังหวัด:</label>
+                <div class="k-form-field-wrap" data-container-for="provcod">
+                    <input type="text" class="k-textbox" id="provcod" name="provcod" required="required"
+                           value="{{ province.provcod }}" autocomplete="off">
+                </div>
+            </div>
+            <div class="k-form-field">
+                <label class="k-label k-form-label" for="provdes" id="provdes-form-label">ชื่อจังหวัด:</label>
+                <div class="k-form-field-wrap" data-container-for="provdes">
+                    <input type="text" class="k-textbox" id="provdes" name="provdes" required="required"
+                           value="{{ province.provdes }}" autocomplete="off">
+                </div>
+            </div>
+            <div class="k-form-buttons">
+                <div id="grid"></div>
+            </div>
+            <div class="k-form-buttons">
+                <button class="k-button k-primary k-form-submit" id="btn_save" type="submit">บันทึก</button>
+                <button type="button" id="id_test"> test</button>
+            </div>
+        </form>
+    </div>
+    <!--kendo UI -->
+    <script src="{% static 'kendo/js/jquery.min.js' %}"></script>
+    <script src="{% static 'kendo/js/kendo.all.min.js' %}"></script>
+    <script src="{% static 'kendo/js/messages/kendo.messages.en-US.min.js' %}"></script>
+    <script src="{% static 'kendo/js/jszip.min.js' %}"></script>
+    <script src="{% static 'kendo/js/cultures/kendo.culture.th-TH.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            function refreshSession(provcod) {
+                $.ajax({
+                    async: false,
+                    type: "GET",
+                    url: "/app1/province_refresh/" + provcod,
+                    success: function (result) {
+                        console.log(result);
+                    }
+                });
+            }
+
+            let crudServiceBaseUrl = "{% url 'api:amphoe_temp' %}";
+            let dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl,
+                        method: 'GET',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    update: {
+                        url: crudServiceBaseUrl,
+                        method: 'PUT',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    destroy: {
+                        url: crudServiceBaseUrl,
+                        method: 'DELETE',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    create: {
+                        url: crudServiceBaseUrl,
+                        method: 'POST',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    parameterMap: function (options, operation) {
+                        if (operation !== "read" && options.models) {
+                            return {models: kendo.stringify(options.models)};
+                        }
+                    }
+                },
+                batch: true,
+                pageSize: 20,
+                schema: {
+                    model: {
+                        id: "idno",
+                        fields: {
+                            idno: {type: "integer"},
+                            aumpcod: {type: "string", validation: {required: true}},
+                            aumpdes: {type: "string", validation: {required: true}},
+                            postcod: {type: "string"},
+                        }
+                    }
+                }
+            });
+            let grid = $("#grid").kendoGrid({
+                dataSource: dataSource,
+                toolbar: [
+                    {name: "create", text: "เพิ่มรายการ"}
+                ],
+                columns: [
+                    {hidden: true, field: "idno"},
+                    {field: "aumpcod", title: "รหัสอำเภอ", width: "120px"},
+                    {field: "aumpdes", title: "ชื่ออำเภอ"},
+                    {field: "postcod", title: "รหัสไปรษณีย์", width: "120px"},
+                    {command: ["destroy"], title: "&nbsp;", width: "120px"}
+                ],
+                editable: {
+                    createAt: "bottom",
+                    mode: "incell"
+                },
+                navigatable: true,
+            }).data("kendoGrid");
+            // Sets toolbar under the Grid body
+            $("#grid").find(".k-grid-toolbar").insertAfter($("#grid .k-grid-content"));
+            // Validator
+            var validator = $("#myForm").kendoValidator().data("kendoValidator");
+
+            $("#myForm").submit(function (e) {
+                if (validator.validate()) {
+                    let provcod = $('#provcod').val();
+                    refreshSession(provcod);
+                    grid.saveChanges();
+                }
+            });
+            $("#id_test").on("click", function () {
+                let provcod = $('#provcod').val();
+                refreshSession(provcod);
+                grid.saveChanges();
+            });
+        });
+    </script>
+{% endblock %}

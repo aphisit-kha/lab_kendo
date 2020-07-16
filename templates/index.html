@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="example">
+        <div id="megaStore">
+            <ul id="menu">
+                <li>
+                    <a href="{% url 'app1:province_index' %}">Test Master Detail</a>
+                </li>
+            </ul>
+        </div>
+        <p></p>
+        <style>
+
+            #menu h2 {
+                font-size: 1em;
+                text-transform: uppercase;
+                padding: 5px 10px;
+            }
+
+            #template img {
+                margin: 5px 20px 0 0;
+                float: left;
+            }
+
+            #template {
+                width: 380px;
+            }
+
+            #template ol {
+                float: left;
+                margin: 0 0 0 30px;
+                padding: 10px 10px 0 10px;
+            }
+
+            #template:after {
+                content: ".";
+                display: block;
+                height: 0;
+                clear: both;
+                visibility: hidden;
+            }
+
+            #template .k-button {
+                float: left;
+                clear: left;
+                margin: 5px 0 5px 12px;
+            }
+        </style>
+    </div>
+    <div id="example">
+        <div id="grid"></div>
+    </div>
+    <!--kendo UI -->
+    <script src="{% static 'kendo/js/jquery.min.js' %}"></script>
+    <script src="{% static 'kendo/js/kendo.all.min.js' %}"></script>
+    <script src="{% static 'kendo/js/messages/kendo.messages.en-US.min.js' %}"></script>
+    <script src="{% static 'kendo/js/jszip.min.js' %}"></script>
+    <script src="{% static 'kendo/js/cultures/kendo.culture.th-TH.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $("#menu").kendoMenu();
+            //
+            $("#grid").kendoGrid({
+                dataSource: {
+                    type: "json",
+                    transport: {
+                        read: "{% url 'api:accmst_list' %}"
+                    },
+                    pageSize: 20
+                },
+                height: 550,
+                groupable: true,
+                sortable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                columns: [{
+                    field: "accmstcod",
+                    title: "รหัสบัญชี",
+                    width: 240
+                }, {
+                    field: "accmstnam",
+                    title: "คำอธิบาย (TH)"
+                }, {
+                    field: "accmsteng",
+                    title: "คำอธิบาย (EN)"
+                }, {
+                    field: "acctypcod",
+                    title: "หมวด",
+                    width: 150
+                }]
+            });
+        });
+    </script>
+{% endblock %}

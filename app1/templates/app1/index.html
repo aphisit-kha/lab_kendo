@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="example">
+        <p></p>
+        <a href="{% url 'app1:province_create' %}" class="k-button k-primary k-form-submit">เพิ่มจังหวัด</a>
+        <p></p>
+        <div id="grid"></div>
+    </div>
+    <!--kendo UI -->
+    <script src="{% static 'kendo/js/jquery.min.js' %}"></script>
+    <script src="{% static 'kendo/js/kendo.all.min.js' %}"></script>
+    <script src="{% static 'kendo/js/messages/kendo.messages.en-US.min.js' %}"></script>
+    <script src="{% static 'kendo/js/jszip.min.js' %}"></script>
+    <script src="{% static 'kendo/js/cultures/kendo.culture.th-TH.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            let crudServiceBaseUrl = "{% url 'api:province_list' %}";
+            let dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl,
+                        method: 'GET',
+                        dataType: 'json',
+                        async: false,
+                    },
+                },
+                batch: true,
+                pageSize: 10,
+                schema: {
+                    model: {
+                        id: "slug",
+                        fields: {
+                            idno: {type: "integer"},
+                            provcod: {type: "string", validation: {required: true}},
+                            provdes: {type: "string", validation: {required: true}},
+                        }
+                    }
+                }
+            });
+            let grid = $("#grid").kendoGrid({
+                dataSource: dataSource,
+                pageable: true,
+                columns: [
+                    {field: "provcod", title: "รหัสจังหวัด", width: "120px"},
+                    {field: "provdes", title: "ชื่อจังหวัด"},
+                    {
+                        title: "Action",
+                        template: "<a class='k-button k-success-colored' href='#= update_url #'>แก้ไข</a>",
+                        width: "120px"
+                    }
+                ],
+            }).data("kendoGrid");
+        });
+    </script>
+{% endblock %}

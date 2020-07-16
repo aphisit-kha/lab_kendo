@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="example">
+        <form id="myForm" data-role="form" class="k-widget k-form" novalidate="novalidate"
+              action="{% url 'app1:province_create' %}" method="post">
+            {% csrf_token %}
+            <div class="k-form-field">
+                <label class="k-label k-form-label" for="provcod" id="provcod-form-label">รหัสจังหวัด:</label>
+                <div class="k-form-field-wrap" data-container-for="provcod">
+                    <input type="text" class="k-textbox" id="provcod" name="provcod" required="required"
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="k-form-field">
+                <label class="k-label k-form-label" for="provdes" id="provdes-form-label">ชื่อจังหวัด:</label>
+                <div class="k-form-field-wrap" data-container-for="provdes">
+                    <input type="text" class="k-textbox" id="provdes" name="provdes" required="required"
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="k-form-buttons">
+                <div id="grid"></div>
+            </div>
+            <div class="k-form-buttons">
+                <button class="k-button k-primary k-form-submit" id="btn_save" type="submit">บันทึก</button>
+                <button class="k-button k-form-clear" id="btn_clear" type="button">Clear</button>
+                <button type="button" id="id_test"> test</button>
+            </div>
+        </form>
+    </div>
+    <!--kendo UI -->
+    <script src="{% static 'kendo/js/jquery.min.js' %}"></script>
+    <script src="{% static 'kendo/js/kendo.all.min.js' %}"></script>
+    <script src="{% static 'kendo/js/messages/kendo.messages.en-US.min.js' %}"></script>
+    <script src="{% static 'kendo/js/jszip.min.js' %}"></script>
+    <script src="{% static 'kendo/js/cultures/kendo.culture.th-TH.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            function refreshSession(provcod) {
+                $.ajax({
+                    type: "GET",
+                    url: "/app1/province_refresh/" + provcod,
+                    success: function (result) {
+                        console.log(result);
+                    }
+                });
+            }
+
+            let crudServiceBaseUrl = "{% url 'api:amphoe_temp' %}";
+            let dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl,
+                        method: 'GET',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    update: {
+                        url: crudServiceBaseUrl,
+                        method: 'PUT',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    destroy: {
+                        url: crudServiceBaseUrl,
+                        method: 'DELETE',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    create: {
+                        url: crudServiceBaseUrl,
+                        method: 'POST',
+                        dataType: 'json',
+                        async: false,
+                    },
+                    parameterMap: function (options, operation) {
+                        if (operation !== "read" && options.models) {
+                            return {models: kendo.stringify(options.models)};
+                        }
+                    }
+                },
+                batch: true,
+                pageSize: 20,
+                schema: {
+                    model: {
+                        id: "idno",
+                        fields: {
+                            idno: {type: "integer"},
+                            aumpcod: {type: "string", validation: {required: true}},
+                            aumpdes: {type: "string", validation: {required: true}},
+                            postcod: {type: "string"},
+                        }
+                    }
+                }
+            });
+            let grid = $("#grid").kendoGrid({
+                dataSource: dataSource,
+                toolbar: [
+                    {name: "create", text: "เพิ่มรายการ"}
+                ],
+                columns: [
+                    {hidden: true, field: "idno"},
+                    {field: "aumpcod", title: "รหัสอำเภอ", width: "120px"},
+                    {field: "aumpdes", title: "ชื่ออำเภอ"},
+                    {field: "postcod", title: "รหัสไปรษณีย์", width: "120px"},
+                    {command: ["destroy"], title: "&nbsp;", width: "120px"}
+                ],
+                editable: {
+                    createAt: "bottom",
+                    mode: "incell"
+                },
+                navigatable: true,
+            }).data("kendoGrid");
+            // Sets toolbar under the Grid body
+            $("#grid").find(".k-grid-toolbar").insertAfter($("#grid .k-grid-content"));
+            // Validator
+            var validator = $("#myForm").kendoValidator().data("kendoValidator");
+
+            $("#myForm").submit(function (e) {
+                if (validator.validate()) {
+                    refreshSession('');
+                    grid.saveChanges();
+                }
+            });
+
+            // event
+            $("#btn_clear").on("click", function () {
+                $("#myForm")[0].reset();
+                validator.reset();
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'api:amphoe_clear' %}",
+                    success: function (result) {
+                        dataSource.read();
+                        grid.refresh();
+                    }
+                });
+            });
+            $("#id_test").on("click", function () {
+                refreshSession('');
+            });
+        });
+    </script>
+{% endblock %}
