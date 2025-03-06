@@ -28,9 +28,8 @@ def create(request):
             # clear session
             temp_amphoe.clear()
         return redirect('app1:province_index')
-    else:
-        Amphoe(request).clear()
-        return render(request, 'app1/create.html')
+    Amphoe(request).clear()
+    return render(request, 'app1/create.html')
 
 
 def update(request, provcod):
