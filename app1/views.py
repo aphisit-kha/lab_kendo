@@ -11,6 +11,7 @@ def index(request):
 
 
 def create(request):
+    print('create')
     if request.method == "POST":
         provcod = request.POST['provcod']
         provdes = request.POST['provdes']
